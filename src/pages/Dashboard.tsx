@@ -9,6 +9,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { QuestionInput } from "@/components/dashboard/QuestionInput";
 import { ConversationHistory } from "@/components/dashboard/ConversationHistory";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const Dashboard = () => {
   const navigate = useNavigate();
