@@ -14,16 +14,288 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ai_conversations: {
+        Row: {
+          answer: string
+          created_at: string
+          id: string
+          question: string
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          id?: string
+          question: string
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          id?: string
+          question?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      closer_kit_activities: {
+        Row: {
+          category: string
+          completed: boolean | null
+          created_at: string
+          description: string
+          difficulty_level: number
+          duration: number | null
+          id: string
+          is_favorite: boolean
+          location: string | null
+          partner_roles: Json | null
+          stage: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          completed?: boolean | null
+          created_at?: string
+          description: string
+          difficulty_level?: number
+          duration?: number | null
+          id?: string
+          is_favorite?: boolean
+          location?: string | null
+          partner_roles?: Json | null
+          stage: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          completed?: boolean | null
+          created_at?: string
+          description?: string
+          difficulty_level?: number
+          duration?: number | null
+          id?: string
+          is_favorite?: boolean
+          location?: string | null
+          partner_roles?: Json | null
+          stage?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      closer_kit_preferences: {
+        Row: {
+          activity_duration: number
+          created_at: string
+          id: string
+          level_of_romance: string
+          location: string
+          relationship_level: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_duration: number
+          created_at?: string
+          id?: string
+          level_of_romance: string
+          location: string
+          relationship_level: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_duration?: number
+          created_at?: string
+          id?: string
+          level_of_romance?: string
+          location?: string
+          relationship_level?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      community_topics: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_admin_only: boolean
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_admin_only?: boolean
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_admin_only?: boolean
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      progress: {
+        Row: {
+          activity_name: string
+          activity_type: string
+          completed_at: string
+          details: Json | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          activity_name: string
+          activity_type: string
+          completed_at?: string
+          details?: Json | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          activity_name?: string
+          activity_type?: string
+          completed_at?: string
+          details?: Json | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      valia_results: {
+        Row: {
+          core_values: Json
+          created_at: string
+          deal_breakers: Json
+          id: string
+          must_haves: Json
+          nice_to_haves: Json
+          user_id: string
+        }
+        Insert: {
+          core_values?: Json
+          created_at?: string
+          deal_breakers?: Json
+          id?: string
+          must_haves?: Json
+          nice_to_haves?: Json
+          user_id: string
+        }
+        Update: {
+          core_values?: Json
+          created_at?: string
+          deal_breakers?: Json
+          id?: string
+          must_haves?: Json
+          nice_to_haves?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vision_boards: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_shared: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_shared?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_shared?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +422,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
