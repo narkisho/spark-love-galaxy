@@ -1,9 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { Anthropic } from "https://esm.sh/@anthropic-ai/sdk@0.4.3";
 
-const anthropic = new Anthropic({
-  apiKey: Deno.env.get('ANTHROPIC_API_KEY')!,
-});
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,46 +8,39 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
   try {
+    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured')
     const { prompt } = await req.json()
-    console.log('Received prompt:', prompt);
+    if (!prompt) throw new Error('No prompt provided')
 
-    if (!prompt) {
-      throw new Error('No prompt provided');
-    }
-
-    const message = await anthropic.messages.create({
-      model: "claude-3-opus-20240229",
-      max_tokens: 1024,
-      messages: [{
-        role: "user",
-        content: `As a relationship coach, help enhance and expand upon this relationship vision/goal. Make it more specific, actionable, and inspiring while maintaining the original intent: "${prompt}". Focus on practical steps and measurable outcomes.`
-      }]
-    });
-
-    console.log('AI response received');
-    const suggestion = message.content[0].text;
-
-    return new Response(
-      JSON.stringify({ suggestion }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
+    const res = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Lovable-API-Key': LOVABLE_API_KEY,
+        'X-Lovable-AIG-SDK': 'edge-function',
       },
-    )
+      body: JSON.stringify({
+        model: 'google/gemini-3-flash-preview',
+        messages: [
+          { role: 'system', content: 'You are a warm, encouraging relationship coach. Use clear markdown formatting (headings, bold, bullet lists) to enhance and expand relationship visions into specific, actionable, and inspiring goals with measurable outcomes.' },
+          { role: 'user', content: `Enhance this relationship vision/goal: "${prompt}"` },
+        ],
+      }),
+    })
+
+    if (res.status === 429) return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again shortly.' }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    if (res.status === 402) return new Response(JSON.stringify({ error: 'AI credits exhausted. Add credits in your workspace.' }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    if (!res.ok) throw new Error(`AI gateway error ${res.status}: ${await res.text()}`)
+
+    const data = await res.json()
+    const suggestion = String(data?.choices?.[0]?.message?.content ?? '').trim()
+
+    return new Response(JSON.stringify({ suggestion }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) {
-    console.error('Error in generate-vision-content:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      },
-    )
+    console.error('generate-vision-content error:', error)
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   }
 })
