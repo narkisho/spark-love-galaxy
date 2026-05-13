@@ -9,6 +9,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { QuestionInput } from "@/components/dashboard/QuestionInput";
 import { ConversationHistory } from "@/components/dashboard/ConversationHistory";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -106,23 +108,11 @@ const Dashboard = () => {
     }
   };
 
-  const formatAnswer = (answer: string) => {
-    if (/\d+\./.test(answer)) {
-      return answer.split('\n').map((line, index) => (
-        <div key={index} className="py-1">{line}</div>
-      ));
-    }
-    
-    if (answer.includes('•') || answer.includes('-')) {
-      return answer.split('\n').map((line, index) => (
-        <div key={index} className="py-1 pl-4">{line}</div>
-      ));
-    }
-    
-    return answer.split('\n').map((paragraph, index) => (
-      <p key={index} className="py-2">{paragraph}</p>
-    ));
-  };
+  const formatAnswer = (answer: string) => (
+    <div className="prose prose-sm md:prose-base max-w-none prose-headings:text-spark-rose prose-headings:font-semibold prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-p:text-spark-text prose-p:leading-relaxed prose-strong:text-spark-rose prose-strong:font-semibold prose-em:text-spark-purple prose-a:text-spark-rose hover:prose-a:text-spark-purple prose-li:my-1 prose-ul:my-2 prose-ol:my-2 prose-blockquote:border-spark-rose prose-blockquote:text-spark-text-light prose-code:text-spark-purple prose-code:bg-spark-rose/10 prose-code:px-1 prose-code:rounded">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{answer}</ReactMarkdown>
+    </div>
+  );
 
   return (
     <MainLayout>
