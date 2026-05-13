@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { createClient } from "npm:@supabase/supabase-js@2.39.3";
 
 const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -16,9 +16,17 @@ serve(async (req) => {
   }
 
   try {
-    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
+    if (!LOVABLE_API_KEY || !supabaseUrl || !supabaseServiceRoleKey) {
+      throw new Error('Server configuration is incomplete');
+    }
 
     const { question, userId, context } = await req.json();
+    if (typeof question !== 'string' || !question.trim() || typeof userId !== 'string' || !userId.trim()) {
+      return new Response(JSON.stringify({ error: 'Question and userId are required.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     console.log('Received request:', { question, userId, hasContext: !!context });
 
     const messages: Array<{ role: string; content: string }> = [
@@ -39,10 +47,11 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        'Lovable-API-Key': LOVABLE_API_KEY,
+        'X-Lovable-AIG-SDK': 'edge-function',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-3-flash-preview',
         messages,
       }),
     });
@@ -66,7 +75,9 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const answer = data?.choices?.[0]?.message?.content;
+    const answer = typeof data?.choices?.[0]?.message?.content === 'string'
+      ? data.choices[0].message.content.trim()
+      : '';
     if (!answer) {
       console.error('Unexpected AI response shape:', data);
       throw new Error('No answer returned from AI');
