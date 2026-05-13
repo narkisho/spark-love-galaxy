@@ -37,7 +37,7 @@ export function ActivityList() {
         completed: item.completed,
         is_favorite: item.is_favorite,
         location: item.location,
-        partner_roles: item.partner_roles as Activity['partner_roles']
+        partner_roles: item.partner_roles as unknown as Activity['partner_roles']
       })) || [];
 
       setActivities(typedActivities);
