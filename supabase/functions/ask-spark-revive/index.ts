@@ -1,10 +1,9 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
-const supabaseUrl = Deno.env.get('SUPABASE_URL');
-const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,58 +16,80 @@ serve(async (req) => {
   }
 
   try {
-    const { question, userId } = await req.json();
-    console.log('Received request:', { question, userId });
+    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
 
-    // Call Anthropic API
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const { question, userId, context } = await req.json();
+    console.log('Received request:', { question, userId, hasContext: !!context });
+
+    const messages: Array<{ role: string; content: string }> = [
+      {
+        role: 'system',
+        content: 'You are a thoughtful, empathetic relationship expert. Provide warm, practical, and concise advice.',
+      },
+    ];
+
+    if (context?.previousQuestion && context?.previousAnswer) {
+      messages.push({ role: 'user', content: context.previousQuestion });
+      messages.push({ role: 'assistant', content: context.previousAnswer });
+    }
+
+    messages.push({ role: 'user', content: question });
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': anthropicApiKey,
-        'anthropic-version': '2023-06-01'
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'claude-3-opus-20240229',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: `As a relationship expert, please provide thoughtful advice for this question: ${question}`
-        }]
-      })
+        model: 'google/gemini-2.5-flash',
+        messages,
+      }),
     });
 
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('AI gateway error:', response.status, errText);
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again shortly.' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: 'AI credits exhausted. Please add credits to your workspace.' }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      throw new Error(`AI gateway error: ${response.status}`);
+    }
+
     const data = await response.json();
-    console.log('Anthropic response:', data);
+    const answer = data?.choices?.[0]?.message?.content;
+    if (!answer) {
+      console.error('Unexpected AI response shape:', data);
+      throw new Error('No answer returned from AI');
+    }
 
-    const answer = data.content[0].text;
-
-    // Store the conversation in Supabase
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-    
     const { error: dbError } = await supabase
       .from('ai_conversations')
-      .insert([
-        { user_id: userId, question, answer }
-      ]);
+      .insert([{ user_id: userId, question, answer }]);
 
     if (dbError) {
       console.error('Database error:', dbError);
       throw dbError;
     }
 
-    return new Response(
-      JSON.stringify({ answer }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ answer }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error('Error in ask-spark-revive function:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
