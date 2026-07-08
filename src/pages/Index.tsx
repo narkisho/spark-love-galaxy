@@ -92,8 +92,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-spark-lavender via-background to-spark-rose overflow-x-hidden">
-      <Hero onGetStarted={() => setShowLogin(true)} achievementUnlocked={achievementUnlocked} />
-      <Features onFeatureClick={() => setShowLogin(true)} />
+      <main>
+        <Hero onGetStarted={() => setShowLogin(true)} achievementUnlocked={achievementUnlocked} />
+        <Features onFeatureClick={() => setShowLogin(true)} />
+      </main>
       <Footer />
 
       <Dialog open={showLogin} onOpenChange={setShowLogin}>
