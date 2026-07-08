@@ -11,7 +11,7 @@ export function Hero({ onGetStarted, achievementUnlocked }: HeroProps) {
       <div className="text-center space-y-6 md:space-y-8 animate-fade-in">
         <div className="relative inline-block">
           <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold mb-4">
-            Welcome to <span className="text-gradient">SparkRevive</span>
+            <span className="text-gradient">SparkRevive</span> — Rekindle your relationship and strengthen your bond
           </h1>
           {achievementUnlocked && (
             <div className="absolute -top-8 right-0 transform rotate-12 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-bold animate-bounce">
