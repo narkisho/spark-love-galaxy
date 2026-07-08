@@ -1,0 +1,20 @@
+# SparkRevive
+
+> SparkRevive helps couples rekindle their relationship through personalized experiences, meaningful conversations, AI-generated date ideas, and thoughtful activities.
+
+## Pages
+
+- [Home](/): Overview of SparkRevive and its relationship-enhancement features.
+- [Date Generator](/date-generator): AI-powered personalized date ideas.
+- [Chemistry Lab](/chemistry-lab): Interactive scenarios to strengthen connection.
+- [CloserKit](/closer-kit): Personalized intimacy-building exercises.
+- [Conversation Hub](/conversation-hub): Meaningful discussion topics for couples.
+- [Love Language Quiz](/love-language-quiz): Discover how you and your partner express affection.
+- [Vision Quest](/vision-quest): Create and share relationship goals.
+- [Valia Quiz](/valia-quiz): Explore your relationship values.
+- [Community](/community): Discussion topics with other members.
+
+## Optional
+
+- [Progress](/progress): Track your relationship growth (requires sign-in).
+- [Dashboard](/dashboard): Personalized dashboard with AI assistant (requires sign-in).
